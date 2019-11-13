@@ -13,7 +13,7 @@ import org.json.JSONException
 
 
 class MainActivity : AppCompatActivity() {
-    var SharedPreferences: SharedPreferences?=null
+    var SharedPreferences: SharedPreferences? = null
 
     var list = ArrayList<Int>()
     @SuppressLint("AddJavascriptInterface", "SetJavaScriptEnabled")
@@ -22,12 +22,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         try {
 
-            SharedPreferences=applicationContext.getSharedPreferences("BoomBlock", Context.MODE_PRIVATE)
+            SharedPreferences =
+                applicationContext.getSharedPreferences("BoomBlock", Context.MODE_PRIVATE)
             list = getStringArrayPref()
-            webview.settings.javaScriptEnabled=true
-            webview.addJavascriptInterface(WebBridge(), "android")
+            webview.settings.javaScriptEnabled = true
             webview.webViewClient = MyWebViewClient()
-            webview.webChromeClient=MyChromeClient()
+            webview.webChromeClient = MyChromeClient()
             webview.loadUrl("https://m.bboom.naver.com/")
 
         } catch (e: Exception) {
@@ -38,8 +38,6 @@ class MainActivity : AppCompatActivity() {
     internal inner class WebBridge {
         @JavascriptInterface
         fun delete() {
-            for (i in list)
-                webview.loadUrl("javascript:$(a[href$=\"/profile/home.nhn?userNo=$i\"]).parent().parent().parent().remove();")
         }
 
         @JavascriptInterface
@@ -84,69 +82,69 @@ class MainActivity : AppCompatActivity() {
     }
 
     internal inner class MyWebViewClient : WebViewClient() {
-        @Override
-        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+
+
+        override fun onPageFinished(view: WebView?, url: String?) {
+            webview.addJavascriptInterface(WebBridge(), "bboomblock")
             if (url != null) {
-                tv.text=url
                 if (url.contains("list.nhn")) {
 
                     webview.loadUrl(
                         "javascript:\$(function(){" +
-                                    "var addBtns=function(){" +
-                                       "\$('#blockbtn').remove();" +
-                                       "\$(\".sc_usr\").each(function(){" +
-                                            "var userno = \$(this).children('a').attr('href').split('=')[1];" +
-                                            "\$(this).append('<input id=\"blockbtn\" type=\"button\" value=\"차단\" onclick=\"window.android.addUser('+userno +')\"/>');" +
-                                        "});" +
-                                    "};" +
-                                    "var getMorePostList = oPostList.__getMoreList;" +
-                                    "oPostList.__getMoreList = function(){" +
-                                        "getMorePostList();" +
-                                        "window.android.delete();" +
-                                        "addBtns();" +
-                                    "};" +
+                                "var addBtns=function(){" +
+                                "\$('#blockbtn').remove();" +
+                                "\$(\".sc_usr\").each(function(){" +
+                                "var userno = \$(this).children('a').attr('href').split('=')[1];" +
+                                "\$(this).append('<input id=\"blockbtn\" type=\"button\" value=\"차단\" onclick=\"window.android.addUser('+userno +')\"/>');" +
+                                "});" +
+                                "};" +
+                                "var getMorePostList = oPostList.__getMoreList;" +
+                                "oPostList.__getMoreList = function(){" +
+                                "getMorePostList();" +
+                                "window.android.delete();" +
+                                "addBtns();" +
+                                "};" +
 
                                 "})"
                     )
                 } else if (url.contains("get.nhn")) {
-
                     webview.loadUrl(
-                        "javascript:$(function(){" +
-                                "var addBtns=function(){" +
-                                "$('#blockbtn').remove();" +
-                                "$('.nick').each(function(){" +
-                                "var userno = $(this).attr('href').split('=')[1];" +
-                                "$(this).append('<input id='blockbtn' type='button' value='차단' onclick='window.android.addUser('+userno +')'/>');" +
-                                "});" +
-                                "};" +
-
-                                "oPostView.BestCommentList = oPostView.__callbackBestCommentList;" +
-                                "oPostView.__callbackBestCommentList = function(a,b){" +
-                                "oPostView.BestCommentList(a,b);" +
+                        "javascript:\$(function(){ " +
+                                "                                var addBtns=function(){" +
+                                "                                \$('.blockbtn').remove();" +
+                                "                                \$('.nick').each(function(){" +
+                                "                                var userno = \$(this).attr('href').split('=')[1];" +
+                                "                                \$(this).after('<input class=\"blockbtn\" type=\"button\" value=\"차단\" onclick=\"window.android.addUser('+userno +')\"/>');" +
+                                "                               });" +
+                                "                                };" +
+                                "" +
+                                /*"                                oPostView.BestCommentList = oPostView.__callbackBestCommentList;" +
+                                "                               oPostView.__callbackBestCommentList = function(a,b){" +
+                                "                                oPostView.BestCommentList(a,b);" +
                                 "window.android.delete();" +
-                                "addBtns();" +
-                                "}" +
-
-                                "oPostView.CommentList = oPostView.__callbackCommentList;" +
-                                "oPostView.__callbackCommentList = function(a,b){" +
-                                "oPostView.CommentList(a,b);" +
-                                "window.android.delete();" +
-                                "addBtns();" +
-                                "}" +
-                                "})"
+                                "                                addBtns();" +
+                                "                                };" +
+                                "" +*/
+                                "                                oPostView.CommentList = oPostView.__callbackCommentList;" +
+                                "                                oPostView.__callbackCommentList = function(a,b){" +
+                                "                                oPostView.CommentList(a,b);" +
+                                "                                bboomblock.delete();" +
+                                "                                addBtns();" +
+                                "                                }; });"
                     )
                 }
             }
-            return false
+            super.onPageFinished(view, url)
         }
-
     }
 
-    internal inner class MyChromeClient : WebChromeClient(){
+    internal inner class MyChromeClient : WebChromeClient() {
         override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
-            tv.text=("MyApplication"+consoleMessage.message() + " -- From line "
-                    + consoleMessage.lineNumber()) + " of "+ consoleMessage.sourceId()
-             return super.onConsoleMessage(consoleMessage)
+            if (!consoleMessage.message().contains("insecure"))
+                tv.text =
+                    tv.text.toString() + ("\nMyApplication" + consoleMessage.message() + " -- From line "
+                            + consoleMessage.lineNumber()) + " of " + consoleMessage.sourceId()
+            return super.onConsoleMessage(consoleMessage)
         }
     }
 }
